@@ -24,7 +24,6 @@ import java.io.OutputStream;
 import java.io.DataOutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 
 import javax.swing.BoxLayout;

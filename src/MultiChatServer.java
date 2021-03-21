@@ -1,7 +1,5 @@
 
 
-import java.io.BufferedInputStream;
-import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -29,12 +27,10 @@ class MultiChatServer {
 	private ServerSocket ssf = null;
 	private Socket s = null;
 	private Socket sf = null;
-	private Map<InetAddress, BufferedWriter> clientsMap;
 	ArrayList<ChatThread> chatlist = new ArrayList<ChatThread>();
 	HashMap<String,Thread> map=new HashMap<>();	
 	HashMap<String,String> map2=new HashMap<>();
 	ArrayList<String> list=new ArrayList<>();
-//	ArrayList<byte[]> Blist=new ArrayList<>();
 	
 	InputStream in = null;                       
     FileOutputStream out = null;

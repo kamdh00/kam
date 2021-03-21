@@ -50,7 +50,7 @@ public class MultiChatClient implements ActionListener, Runnable {
 	private Socket socketFile;
 	private BufferedReader inMsg = null;
 	private PrintWriter outMsg = null;
-	private FileInputStream fin;
+//	private FileInputStream fin;
 	private FileOutputStream fout;
 	private OutputStream out;
 	private static InputStream in;
@@ -470,38 +470,49 @@ public class MultiChatClient implements ActionListener, Runnable {
 			socketFile = new Socket(ip, 7777);
 			System.out.println("[Client]File Transfer Server 연결 성공!!");
 			
+			outMsg.println(id+"/"+"파일전송@@"+filePath);
+			
 			out =socketFile.getOutputStream();                 //서버에 바이트단위로 데이터를 보내는 스트림을 개통합니다.
-            DataOutputStream dout = new DataOutputStream(out); //OutputStream을 이용해 데이터 단위로 보내는 스트림을 개통합니다.
+            DataOutputStream dout = new DataOutputStream(out); //OutputStream을 이용해 데이터 단위로 보내는 스트림을 개통합니다.            
 
-			fin = new FileInputStream(new File(filePath));	//FileInputStream - 파일에서 입력받는 스트림을 개통합니다.
+//			fin = new FileInputStream(new File(filePath));	//FileInputStream - 파일에서 입력받는 스트림을 개통합니다.
+            FileInputStream fin = new FileInputStream(filePath);	//FileInputStream - 파일에서 입력받는 스트림을 개통합니다.
+            BufferedInputStream bis = new BufferedInputStream(fin);
+            
 			byte[] buffer = new byte[1024];	//바이트단위로 임시저장하는 버퍼를 생성합니다.
 			int len;	//전송할 데이터의 길이를 측정하는 변수입니다.
+			
+			while ((len = bis.read(buffer)) != -1) {
+				dout.write(buffer,0,len);
+				dout.flush();
+			}
 	        
-			int data=0; //전송횟수, 용량을 측정하는 변수입니다.
-	        while((len = fin.read(buffer))>0){     //FileInputStream을 통해 파일에서 입력받은 데이터를 버퍼에 임시저장하고 그 길이를 측정합니다.
-	            data++;                        //데이터의 양을 측정합니다.
-	        }
-	        
-	        int datas = data;                      //아래 for문을 통해 data가 0이되기때문에 임시저장한다.
-	        
-	        outMsg.println(id+"/"+"파일전송@@"+filePath+"@@"+data);
-	 
-	        fin.close();
-	        fin = new FileInputStream(filePath);   //FileInputStream이 만료되었으니 새롭게 개통합니다.		        
-	        
-	        dout.writeInt(data);                   //데이터 전송횟수를 서버에 전송하고,
-	        dout.writeUTF(filePath);               //파일의 이름을 서버에 전송합니다.
-//	        System.out.println(id+"/"+"파일전송:"+filePath+"@@"+data);		        
-
-	        len = 0;
-	        int count=1;
-	        
-	        for(;data>0;data--){                   //데이터를 읽어올 횟수만큼 FileInputStream에서 파일의 내용을 읽어옵니다.
-	            len = fin.read(buffer);        //FileInputStream을 통해 파일에서 입력받은 데이터를 버퍼에 임시저장하고 그 길이를 측정합니다.
-	            System.out.println("999999>>>>>>>>>>>>"+count+":"+len);
-	            count++;
-	            out.write(buffer,0,len);       //서버에게 파일의 정보(1kbyte만큼보내고, 그 길이를 보냅니다.
-	        }
+//			int data=0; //전송횟수, 용량을 측정하는 변수입니다.
+//	        while((len = fin.read(buffer))>0){     //FileInputStream을 통해 파일에서 입력받은 데이터를 버퍼에 임시저장하고 그 길이를 측정합니다.
+//	            data++;                        //데이터의 양을 측정합니다.
+//	        }
+//	        
+//	        int datas = data;                      //아래 for문을 통해 data가 0이되기때문에 임시저장한다.
+//	        
+//	        outMsg.println(id+"/"+"파일전송@@"+filePath+"@@"+data);
+//	 
+//	        fin.close();
+//	        fin = new FileInputStream(filePath);   //FileInputStream이 만료되었으니 새롭게 개통합니다.		        
+//	        
+//	        dout.writeInt(data);                   //데이터 전송횟수를 서버에 전송하고,
+//	        dout.writeUTF(filePath);               //파일의 이름을 서버에 전송합니다.
+////	        System.out.println(id+"/"+"파일전송:"+filePath+"@@"+data);		        
+//
+//	        len = 0;
+//	        int count=1;
+//	        
+//	        for(;data>0;data--){                   //데이터를 읽어올 횟수만큼 FileInputStream에서 파일의 내용을 읽어옵니다.
+//	            len = fin.read(buffer);        //FileInputStream을 통해 파일에서 입력받은 데이터를 버퍼에 임시저장하고 그 길이를 측정합니다.
+//	            System.out.println("999999>>>>>>>>>>>>"+count+":"+len);
+//	            count++;
+////	            out.write(buffer,0,len);       //서버에게 파일의 정보(1kbyte만큼보내고, 그 길이를 보냅니다.
+//	            out.write(buffer);       //서버에게 파일의 정보(1kbyte만큼보내고, 그 길이를 보냅니다.
+//	        }
 	        dout.close();
 	        fin.close();
 	        out.close();

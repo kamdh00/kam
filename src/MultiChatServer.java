@@ -1,5 +1,6 @@
 
 
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.DataInputStream;
@@ -31,6 +32,7 @@ class MultiChatServer {
 	HashMap<String,Thread> map=new HashMap<>();	
 	HashMap<String,String> map2=new HashMap<>();
 	ArrayList<String> list=new ArrayList<>();
+	ArrayList<byte[]> flist = new ArrayList<>();
 	
 	InputStream in = null;                       
     FileOutputStream out = null;
@@ -116,9 +118,13 @@ class MultiChatServer {
 			        	
 			        	outMsg.println(id+"/"+"파일전송:"+filename+"@@"+data);
 			        	
-			        	for(;data>0;data--){                   //데이터를 읽어올 횟수만큼 FileInputStream에서 파일의 내용을 읽어옵니다.
-			        		len = fin.read(buffer);        //FileInputStream을 통해 파일에서 입력받은 데이터를 버퍼에 임시저장하고 그 길이를 측정합니다.
-			        		out2.write(buffer,0,len);       //서버에게 파일의 정보(1kbyte만큼보내고, 그 길이를 보냅니다.
+//			        	for(;data>0;data--){                   //데이터를 읽어올 횟수만큼 FileInputStream에서 파일의 내용을 읽어옵니다.
+//			        		len = fin.read(buffer);        //FileInputStream을 통해 파일에서 입력받은 데이터를 버퍼에 임시저장하고 그 길이를 측정합니다.
+//			        		out2.write(buffer,0,len);       //서버에게 파일의 정보(1kbyte만큼보내고, 그 길이를 보냅니다.
+//			        	}
+			        	
+			        	for(byte[] bt:flist) {
+			        		out2.write(bt,0,len);       //서버에게 파일의 정보(1kbyte만큼보내고, 그 길이를 보냅니다.			        		
 			        	}
 			        	
 			        	System.out.println("약 "+datas+" kbyte");
@@ -186,25 +192,41 @@ class MultiChatServer {
 						sf = ssf.accept();
 						
 				        in = sf.getInputStream();                //클라이언트로 부터 바이트 단위로 입력을 받는 InputStream을 얻어와 개통합니다.				        
-				        DataInputStream din = new DataInputStream(in);  //InputStream을 이용해 데이터 단위로 입력을 받는 DataInputStream을 개통합니다.				        
-				        				        
-				        int data = din.readInt();           //Int형 데이터를 전송받습니다.
-				        int datas = data;                            //전송횟수, 용량을 측정하는 변수입니다.
+				        DataInputStream din = new DataInputStream(in);  //InputStream을 이용해 데이터 단위로 입력을 받는 DataInputStream을 개통합니다.
 				        String filename="";
-				        filename = din.readUTF()+"test";            //String형 데이터를 전송받아 filename(파일의 이름으로 쓰일)에 저장합니다.					        
-				        File file = new File(filename);             //입력받은 File의 이름으로 복사하여 생성합니다.
-				        out = new FileOutputStream(file);           //생성한 파일을 클라이언트로부터 전송받아 완성시키는 FileOutputStream을 개통합니다.				        
-				        while(data > 0) {					        
-					        byte[] buffer = new byte[1024];        //바이트단위로 임시저장하는 버퍼를 생성합니다.
-					        int len,count=1;                               //전송할 데이터의 길이를 측정하는 변수입니다.
-					        
-					        for(;data>0;data--){                   //전송받은 data의 횟수만큼 전송받아서 FileOutputStream을 이용하여 File을 완성시킵니다.
-					            len = in.read(buffer);
-					            System.out.println("1111111>>>>>>>>>>>>"+count+":"+len);
-					            count++;
-					            out.write(buffer,0,len);
-					        }					        
-				        }
+				        filename = din.readUTF()+"test";            //String형 데이터를 전송받아 filename(파일의 이름으로 쓰일)에 저장합니다.		
+				        FileOutputStream fos = new FileOutputStream(filename);
+				        BufferedOutputStream bos = new BufferedOutputStream(fos);
+						
+						byte[] bytes = new byte[8192];
+						
+						int len;
+						
+						while ((len = din.read(bytes))!=-1) {
+							bos.write(bytes,0,len);
+							bos.flush();
+						}
+						
+						bos.close();
+				        				        
+//				        int data = din.readInt();           //Int형 데이터를 전송받습니다.
+//				        int datas = data;                            //전송횟수, 용량을 측정하는 변수입니다.
+//				        String filename="";
+//				        filename = din.readUTF()+"test";            //String형 데이터를 전송받아 filename(파일의 이름으로 쓰일)에 저장합니다.					        
+//				        File file = new File(filename);             //입력받은 File의 이름으로 복사하여 생성합니다.
+//				        out = new FileOutputStream(file);           //생성한 파일을 클라이언트로부터 전송받아 완성시키는 FileOutputStream을 개통합니다.				        
+//				        while(data > 0) {					        
+//					        byte[] buffer = new byte[1024];        //바이트단위로 임시저장하는 버퍼를 생성합니다.
+//					        int len,count=1;                               //전송할 데이터의 길이를 측정하는 변수입니다.
+//					        
+//					        for(;data>0;data--){                   //전송받은 data의 횟수만큼 전송받아서 FileOutputStream을 이용하여 File을 완성시킵니다.
+//					            len = in.read(buffer);
+//					            flist.add(buffer);
+//					            System.out.println("1111111>>>>>>>>>>>>"+count+":"+len);
+//					            count++;
+//					            out.write(buffer,0,len);
+//					        }					        
+//				        }
 				        din.close();
 				        in.close();
 				        out.flush();					        
@@ -213,7 +235,7 @@ class MultiChatServer {
 				        /*** 받은 파일 서버에 임시 저장 완료 ***/
 				        
 				        /*** 각 접속자에게 파일 전송 ***/
-				        fileTransfer(filename, rmsg[0],datas);	// 파일 보낸 접속자 이외의 접속자에게 파일 전송
+//				        fileTransfer(filename, rmsg[0],datas);	// 파일 보낸 접속자 이외의 접속자에게 파일 전송
 				        /*** 각 접속자에게 파일 전송 완료 ***/
 					}
 					else if(rmsg[1].contains("귓속말:")) {   //substring(0,4)
